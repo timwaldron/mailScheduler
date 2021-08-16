@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+  <metadata>
+    <name>mailScheduler</name>
+    <type>plugin</type>
+    <creationDate>2021-08-01</creationDate>
+    <lastUpdate>2021-08-01</lastUpdate>
+    <author>Timothy Waldron</author>
+    <authorUrl>https://waldrons.com.au</authorUrl>
+    <version>1.0.0</version>
+    <license>GNU Affero General Public License</license>
+    <description><![CDATA[Set up and configure survey reminders per participant.]]></description>
+  </metadata>
+
+  <compatibility>
+    <version>5.0</version>
+  </compatibility>
+
+  <updaters disabled="disabled">
+  </updaters>
+</config>

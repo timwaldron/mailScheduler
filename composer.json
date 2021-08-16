@@ -1,0 +1,14 @@
+{
+  "name": "timwaldron/mailscheduler",
+  "description": "Set up and configure survey reminders per participant.",
+  "type": "limesurvey-plugin",
+  "homepage": "https://github.com/timwaldron/LS-mailScheduler",
+  "authors": [
+      {
+          "name": "Timothy Waldron",
+          "email": "tim@waldrons.com.au"
+      }
+  ],
+  "minimum-stability": "stable",
+  "require": {}
+}
