@@ -43,6 +43,3 @@
         <?php echo CHtml::endForm();?>
     </div>
 </div>
-<?php
-  Yii:app()->clientScript->registerScriptFile($assetUrl.'/settings.js',CClientScript::POS_END);
-?>

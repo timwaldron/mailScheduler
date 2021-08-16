@@ -20,6 +20,7 @@
 
 class mailScheduler extends PluginBase
 {
+  protected $storage = 'DbStorage';
   static protected $name = 'mailScheduler';
   static protected $description = 'Set up and configure survey reminders per participant';
 }
