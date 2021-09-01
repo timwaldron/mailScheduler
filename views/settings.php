@@ -31,6 +31,20 @@
         </select>
       </div>
 
+      
+      <div class="form-group setting setting-select">
+        <label class="default control-label col-sm-3" for="injuryType">Patient injury type</label>
+        
+        <select id="injuryType" name="injuryType">
+          <option value="">Category of Patient</option>
+          <option value="1">Knee Arthroplasty/Arthritis</option>
+          <option value="2">Knee Non-Arthritis</option>
+          <option value="3">Hip</option>
+          <option value="4">Shoulder Arthroplasty</option>
+          <option value="5">Shoulder Instability</option>
+        </select>
+      </div>
+
       <div id="followupContent">
         <h3>Dates</h3>
         <div id="nullParticipant"></div>
@@ -96,6 +110,8 @@
 </div>
 
 <script>
+  console.log('Host Name is: ' + window.location.hostname);
+
   function getScheduleData() {
     const userToken = document.getElementById('usertoken').value;
 
@@ -118,7 +134,7 @@
         try {
           payload = JSON.parse(response.split('<!DOCTYPE html>')[0]); // Split by end-of-payload & start of HTML
         } catch (e) {
-          console.log('Cannot find data for token/survey: <?php echo $_POST['usertoken'] ?> / <?php echo $surveyId ?>');
+          console.log('Cannot find data for token/survey: ' + userToken + ' / <?php echo $surveyId ?>');
           document.getElementById('nullParticipant').innerHtml = '<h4><strong>Cannot find data for this participant in scheduling system, you can set and save it in this screen.</strong></h4>';
         }
         
@@ -127,6 +143,7 @@
             recruitmentDate: '',
             surgeryDate: '',
             recalcFollowupDates: false,
+            injuryType: '',
             followupDates: [
               '', // 6 Weeks
               '', // 3 Months
@@ -142,6 +159,7 @@
         // Setting form data values
         document.getElementById('recruitmentDate').value = payload['recruitmentDate'];
         document.getElementById('surgeryDate').value = payload['surgeryDate'];
+        document.getElementById('injuryType').value = payload['injuryType'];
         document.getElementById('recalcFollowupDates').checked = false;
 
         // Followup dates
@@ -167,6 +185,7 @@
         formData: {
           recruitmentDate: document.getElementById('recruitmentDate').value,
           surgeryDate: document.getElementById('surgeryDate').value,
+          injuryType: document.getElementById('injuryType').value,
           recalcFollowupDates: document.getElementById('recalcFollowupDates').checked,
           followupDates: [
             document.getElementById('followUp0').value, // 6 Weeks

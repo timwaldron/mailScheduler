@@ -82,7 +82,7 @@ class mailScheduler extends PluginBase
     }
 
     // Get all the participants in a survey
-    $aData['users'] = Yii::app()->db->createCommand('SELECT token, firstname, lastname FROM {{tokens_' . $surveyId . '}}')->queryAll();
+    $aData['users'] = Yii::app()->db->createCommand('SELECT token, firstname, lastname, attribute_10, attribute_11 FROM {{tokens_' . $surveyId . '}}')->queryAll();
     $aData['surveyId'] = $surveyId;
 
     // Create URLs to call the functions that ping the backend
@@ -117,7 +117,9 @@ class mailScheduler extends PluginBase
     $surveyId = $_GET['surveyId'];
 
     // Get all users
-    $users = Yii::app()->db->createCommand('SELECT token, firstname, lastname, email FROM {{tokens_' . $surveyId . '}}')->queryAll();
+    // Injury Type:   attribute_10
+    // Surgury Date:  attribute_11 | TODO: Check if there's disparities between the surgery dates in the LS MySQL / MS MongoDB databases
+    $users = Yii::app()->db->createCommand('SELECT token, firstname, lastname, email, attribute_10, attribute_11 FROM {{tokens_' . $surveyId . '}}')->queryAll();
 
     // Create the payload
     $userScheduleModel = array();
@@ -128,25 +130,26 @@ class mailScheduler extends PluginBase
       if ($user['token'] == $token)
       {
         $userScheduleModel = $user;
-        $userScheduleModel['surveyId'] = $surveyId;
       }
     }
 
+    $userScheduleModel['surveyId'] = $surveyId;
     $userScheduleModel['recruitmentDate'] = $_GET['formData']['recruitmentDate'];
     $userScheduleModel['surgeryDate'] = $_GET['formData']['surgeryDate'];
+    $userScheduleModel['injuryType'] = $_GET['formData']['injuryType'];
     $userScheduleModel['recalcFollowupDates'] = $_GET['formData']['recalcFollowupDates'];
     $userScheduleModel['followupDates'] = $_GET['formData']['followupDates'];
 
-    $this->httpPost($userScheduleModel);
+    $this->httpPost('', $userScheduleModel);
   }
 
   /**
    * Send a POST request to the backend API
    */
-  private function httpPost($postData)
+  private function httpPost($route, $postData)
   {
     // Create a new cURL resource
-    $ch = curl_init('http://localhost:5000/scheduler');
+    $ch = curl_init('http://localhost:5000/scheduler' . $route);
     $payload = json_encode($postData);
 
     // Set the request options
@@ -179,5 +182,17 @@ class mailScheduler extends PluginBase
     curl_close($ch);
 
     return $output;
+  }
+
+  /**
+   * Called externally to
+   */
+  public function initUserSchedule()
+  {
+    $payload = $_GET['payload'];
+    
+    $this->httpPost('/init', $payload);
+
+    echo $_GET['data'];
   }
 }
