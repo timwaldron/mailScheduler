@@ -1,9 +1,6 @@
 <div class="row">
   <div class="col-lg-12 content-right">
     <?php echo CHtml::beginForm('', 'POST', array('id'=>'settingsForm'));?>
-    
-      <pre><?php echo $initUserSchedule; ?></pre>
-
       <h3 class="clearfix">Mail Schedule Settings
         <div class='pull-right'>
           <button id="save-btn" style="display: none;" type="button" class="btn btn-primary" onclick="saveScheduleData();">

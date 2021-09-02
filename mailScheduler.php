@@ -88,7 +88,6 @@ class mailScheduler extends PluginBase
     // Create URLs to call the functions that ping the backend
     $aData['getSchedulerURI'] = Yii::app()->createUrl('admin/pluginhelper', array('plugin' => $this->getName(), 'sa'=>'sidebody', 'method'=>'getScheduleData'));
     $aData['saveSchedulerURI'] = Yii::app()->createUrl('admin/pluginhelper', array('plugin' => $this->getName(), 'sa'=>'sidebody', 'method'=>'saveScheduleData'));
-    $aData['initUserSchedule'] = Yii::app()->createUrl('admin/pluginhelper', array('plugin' => $this->getName(), 'sa'=>'sidebody', 'method'=>'initUserSchedule'));
 
     $content = $this->renderPartial('settings', $aData, true);
 
@@ -190,7 +189,6 @@ class mailScheduler extends PluginBase
    */
   public function initUserSchedule()
   {
-    echo "<script>console.log('hello from initUserSchedule')";
     $payload = $_GET['payload'];
     
     $this->httpPost('/init', $payload);
