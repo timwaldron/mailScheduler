@@ -189,6 +189,7 @@ class mailScheduler extends PluginBase
    */
   public function initUserSchedule()
   {
+    echo "<script>console.log('hello from initUserSchedule')";
     $payload = $_GET['payload'];
     
     $this->httpPost('/init', $payload);
