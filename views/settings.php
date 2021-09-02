@@ -30,17 +30,16 @@
         </select>
       </div>
 
-      
       <div class="form-group setting setting-select">
         <label class="default control-label col-sm-3" for="injuryType">Patient injury type</label>
         
         <select id="injuryType" name="injuryType">
           <option value="">Category of Patient</option>
-          <option value="1">Knee Arthroplasty/Arthritis</option>
-          <option value="2">Knee Non-Arthritis</option>
-          <option value="3">Hip</option>
-          <option value="4">Shoulder Arthroplasty</option>
-          <option value="5">Shoulder Instability</option>
+          <option value="H">Hip</option>
+          <option value="KN">Knee Non-Arthritis</option>
+          <option value="KA">Knee Arthroplasty</option>
+          <option value="SA">Shoulder Arthroplasty</option>
+          <option value="SI">Shoulder Instability</option>
         </select>
       </div>
 
