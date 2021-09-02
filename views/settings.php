@@ -1,6 +1,8 @@
 <div class="row">
   <div class="col-lg-12 content-right">
     <?php echo CHtml::beginForm('', 'POST', array('id'=>'settingsForm'));?>
+    
+      <pre><?php echo $initUserSchedule; ?></pre>
 
       <h3 class="clearfix">Mail Schedule Settings
         <div class='pull-right'>
@@ -13,6 +15,10 @@
           ?>
         </div>
       </h3>
+
+      <div class="form-group setting setting-select">
+        <label class="default control-label col-sm-3">LimeSurvey plugin route</label>
+      </div>
 
       <div class="form-group setting setting-select">
         <label class="default control-label col-sm-3" for="usertoken">Select a patient to configure email reminders</label>
