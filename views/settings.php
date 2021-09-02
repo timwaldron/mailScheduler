@@ -14,10 +14,6 @@
       </h3>
 
       <div class="form-group setting setting-select">
-        <label class="default control-label col-sm-3">LimeSurvey plugin route</label>
-      </div>
-
-      <div class="form-group setting setting-select">
         <label class="default control-label col-sm-3" for="usertoken">Select a patient to configure email reminders</label>
 
         <select id="usertoken" name="usertoken" class="" onchange="getScheduleData();">
