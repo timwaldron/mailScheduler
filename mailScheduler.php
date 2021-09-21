@@ -31,8 +31,6 @@ class mailScheduler extends PluginBase
   {
     /* Adding link in the survey menu */
     $this->subscribe('beforeToolsMenuRender');
-    
-    // App()->setFlashMessage('Welcome to the mailScheduler plugin!');
   }
 
   /**
@@ -43,30 +41,48 @@ class mailScheduler extends PluginBase
     $event = $this->getEvent();
     $surveyId = $event->get('surveyId');
 
-    $aMenuItem = array(
-      'label' => 'Mail Scheduler',
+    $aMenuItemUsers = array(
+      'label' => 'Mail Scheduler - Users',
       'iconClass' => 'fa fa-envelope-square',
       'href' => Yii::app()->createUrl(
         'admin/pluginhelper',
         array(
           'sa' => 'sidebody',
           'plugin' => get_class($this),
-          'method' => 'actionSettings',
+          'method' => 'userSchedule',
+          'surveyId' => $surveyId
+        )
+      ),
+    );
+    $aMenuItemSettings = array(
+      'label' => 'Mail Scheduler - Global Settings',
+      'iconClass' => 'fa fa-cog',
+      'href' => Yii::app()->createUrl(
+        'admin/pluginhelper',
+        array(
+          'sa' => 'sidebody',
+          'plugin' => get_class($this),
+          'method' => 'globalSettings',
           'surveyId' => $surveyId
         )
       ),
     );
 
     // Check for old LimeSurvey
-    $menuItem = class_exists("\LimeSurvey\Menu\MenuItem") ? new \LimeSurvey\Menu\MenuItem($aMenuItem) : new \ls\menu\MenuItem($aMenuItem);
+    $menuUsers = class_exists("\LimeSurvey\Menu\MenuItem") ? new \LimeSurvey\Menu\MenuItem($aMenuItemUsers) : new \ls\menu\MenuItem($aMenuItemUsers);
+    $menuSettings = class_exists("\LimeSurvey\Menu\MenuItem") ? new \LimeSurvey\Menu\MenuItem($aMenuItemSettings) : new \ls\menu\MenuItem($aMenuItemSettings);
 
-    $event->append('menuItems', array($menuItem));
+    // Todo: potentially generate the token here?
+
+    $event->append('menuItems', array($menuUsers, $menuSettings));
   }
 
+  
+  //////////////////// USER SCHEDULE SECTION //////////////////// 
   /**
-   * Main Function
+   * Main Function - Users
   */
-  public function actionSettings($surveyId)
+  public function userSchedule($surveyId)
   {
     $oSurvey = Survey::model()->findByPk($surveyId);
     $aData = array();
@@ -88,8 +104,9 @@ class mailScheduler extends PluginBase
     // Create URLs to call the functions that ping the backend
     $aData['getSchedulerURI'] = Yii::app()->createUrl('admin/pluginhelper', array('plugin' => $this->getName(), 'sa'=>'sidebody', 'method'=>'getScheduleData'));
     $aData['saveSchedulerURI'] = Yii::app()->createUrl('admin/pluginhelper', array('plugin' => $this->getName(), 'sa'=>'sidebody', 'method'=>'saveScheduleData'));
+    $aData['debugMailTestURI'] = Yii::app()->createUrl('admin/pluginhelper', array('plugin' => $this->getName(), 'sa'=>'sidebody', 'method'=>'debugMailTest'));
 
-    $content = $this->renderPartial('settings', $aData, true);
+    $content = $this->renderPartial('userSchedule', $aData, true);
 
     return $content;
   }
@@ -102,7 +119,7 @@ class mailScheduler extends PluginBase
     $token = $_GET['token'];
     $surveyId = $_GET['surveyId'];
 
-    $response = $this->httpGet(array('token'=>$token, 'surveyId'=>$surveyId));
+    $response = $this->httpGet('scheduler/' . $surveyId, array('token'=>$token));
   
     echo $response;
   }
@@ -140,16 +157,132 @@ class mailScheduler extends PluginBase
     $userScheduleModel['recalcFollowupDates'] = $_GET['formData']['recalcFollowupDates'];
     $userScheduleModel['followupDates'] = $_GET['formData']['followupDates'];
 
-    $this->httpPost('', $userScheduleModel);
+    $this->httpPost('scheduler', $userScheduleModel);
   }
 
+  /**
+   * Function to request a test mail based on the surgery date
+   */
+  public function debugMailTest()
+  {
+    // Variabless from the HTML form submit
+    $payload = array();
+
+    $payload['token'] = $_GET['token'];
+    $payload['surveyId'] = $_GET['surveyId'];
+    // $payload['followupDate'] = $_GET['followupDate'];
+
+    echo $payload['token'] . ' | ' . $payload['surveyId'] . ' | ' . $payload['followupDate'] . ' | ';
+
+    $this->httpGet('scheduler/mailtest/' . $_GET['followupDate'], $payload);
+  }
+
+  /**
+   * Initialises a user in the scheduler system
+   * This function is called by injecting javascript into the registration form question
+   * 
+   * TODO: Move this into a README of some sort
+   * 
+   * Example of question group description (This is where the script pulls the data from)
+   *   <div id="data" style="display:none;">
+   *    <input id="firstName" value="{TOKEN:FIRSTNAME}" />
+   *    <input id="lastName" value="{TOKEN:LASTNAME}" />
+   *    <input id="email" value="{TOKEN:EMAIL}" />
+   *    <input id="injuryType" value="{TOKEN:ATTRIBUTE_10}" />
+   *    <input id="surgeryDate" value="{TOKEN:ATTRIBUTE_11}" />
+   *    <input id="token" value="{TOKEN:TOKEN}" />
+   *    <input id="surveyId" value="{SID}" />
+   *   </div>
+   * 
+   * Example of JavaScript to be injected into registration form question:
+   *   $(document).ready(function () {
+   *     const payload = {
+   *       firstName: document.getElementById('firstName').value,
+   *       lastName: document.getElementById('lastName').value,
+   *       email: document.getElementById('email').value,
+   *       injuryType: document.getElementById('injuryType').value,
+   *       surgeryDate: document.getElementById('surgeryDate').value,
+   *       token: document.getElementById('token').value,
+   *       surveyId: document.getElementById('surveyId').value,
+   *     };
+   *     
+   *     $.ajax({
+   *       url: '/index.php?r=admin/pluginhelper&plugin=mailScheduler&sa=sidebody&method=initUserSchedule',
+   *       type: 'GET',
+   *       data: { payload, },
+   *       success: function (response) { }, // Do something with response if you want
+   *       error: function(xhr) { } // Do something with response if you want
+   *     });
+   *   });
+   */
+  public function initUserSchedule()
+  {
+    $payload = $_GET['payload'];
+    
+    $this->httpPost('scheduler/init', $payload);
+
+    echo $_GET['data'];
+  }
+
+
+  //////////////////// GLOBAL SETTINGS SECTION //////////////////// 
+  /**
+   * Main Function - Plugin Settings
+   */
+  public function globalSettings($surveyId)
+  {
+    $oSurvey = Survey::model()->findByPk($surveyId);
+    $aData = array();
+
+    if (!$oSurvey)
+    {
+      throw new CHttpException(404, 'This survey does not seem to exist.');
+    }
+
+    if (!Permission::model()->hasSurveyPermission($surveyId, 'surveysettings', 'update'))
+    {
+      throw new CHttpException(403);
+    }
+
+    // Get all the plugin settings
+    $aData['settings'] = ''; // API Call to backend to get settings
+    $aData['surveyId'] = $surveyId;
+
+    // Create URLs to call the functions that ping the backend
+    $aData['getTelemetryURI'] = Yii::app()->createUrl('admin/pluginhelper', array('plugin' => $this->getName(), 'sa'=>'sidebody', 'method'=>'getTelemetry'));
+    $aData['getMSSettingsURI'] = Yii::app()->createUrl('admin/pluginhelper', array('plugin' => $this->getName(), 'sa'=>'sidebody', 'method'=>'getMSSettings'));
+    $aData['saveMSSettingsURI'] = Yii::app()->createUrl('admin/pluginhelper', array('plugin' => $this->getName(), 'sa'=>'sidebody', 'method'=>'saveMSSettings'));
+
+    $content = $this->renderPartial('globalSettings', $aData, true);
+
+    return $content;
+  }
+
+  public function getTelemetry()
+  {
+    $response = $this->httpGet('telemetry', array());
+    echo $response;
+  }
+
+  public function getMSSettings()
+  {
+
+  }
+
+  public function saveMSSettings()
+  {
+
+  }
+
+
+  //////////////////// PRIVATE INTERNAL FUNCTIONS //////////////////// 
   /**
    * Send a POST request to the backend API
    */
   private function httpPost($route, $postData)
   {
     // Create a new cURL resource
-    $ch = curl_init('http://localhost:5000/scheduler' . $route);
+    $ch = curl_init('http://localhost:5000/' . $route);
     $payload = json_encode($postData);
 
     // Set the request options
@@ -170,11 +303,10 @@ class mailScheduler extends PluginBase
   /**
    * Send a GET request to the backend API
    */
-  private function httpGet($params)
+  private function httpGet($route, $params)
   {
     $postData = http_build_query($params, '', '&');
-    $fullUrl = 'http://localhost:5000/scheduler/' . $params["surveyId"] . '?' . $postData;
-    $fp = fopen(dirname(__FILE__) . '/errorlog.txt', 'w');
+    $fullUrl = 'http://localhost:5000/' . $route . '?' . $postData;
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $fullUrl);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -182,17 +314,5 @@ class mailScheduler extends PluginBase
     curl_close($ch);
 
     return $output;
-  }
-
-  /**
-   * Called externally to
-   */
-  public function initUserSchedule()
-  {
-    $payload = $_GET['payload'];
-    
-    $this->httpPost('/init', $payload);
-
-    echo $_GET['data'];
   }
 }
