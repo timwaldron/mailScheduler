@@ -98,8 +98,19 @@ class mailScheduler extends PluginBase
     }
 
     // Get all the participants in a survey
-    $aData['users'] = Yii::app()->db->createCommand('SELECT token, firstname, lastname, attribute_10, attribute_11 FROM {{tokens_' . $surveyId . '}}')->queryAll();
+    $aData['users'] = array();
     $aData['surveyId'] = $surveyId;
+
+    // Get all users with additional fields
+    // ATTRIBUTE_1:   Affected Side
+    // ATTRIBUTE_2:   Date of Surgery
+    // ATTRIBUTE_3:   Joint Injury Type
+    // ATTRIBUTE_4:   Specialist
+    try {
+      $aData['users'] = Yii::app()->db->createCommand('SELECT token, firstname, lastname, attribute_1, attribute_2, attribute_3, attribute_4 FROM {{tokens_' . $surveyId . '}}')->queryAll();
+    } catch (Exception $e) {
+      // TODO: Display to user?
+    }
 
     // Create URLs to call the functions that ping the backend
     $aData['getSchedulerURI'] = Yii::app()->createUrl('admin/pluginhelper', array('plugin' => $this->getName(), 'sa'=>'sidebody', 'method'=>'getScheduleData'));
@@ -132,11 +143,18 @@ class mailScheduler extends PluginBase
     // Variabless from the HTML form submit
     $token = $_GET['token'];
     $surveyId = $_GET['surveyId'];
+    $users = array();
 
-    // Get all users
-    // Injury Type:   attribute_10
-    // Surgury Date:  attribute_11 | TODO: Check if there's disparities between the surgery dates in the LS MySQL / MS MongoDB databases
-    $users = Yii::app()->db->createCommand('SELECT token, firstname, lastname, email, attribute_10, attribute_11 FROM {{tokens_' . $surveyId . '}}')->queryAll();
+    // Get all users with additional fields
+    // ATTRIBUTE_1:   Affected Side
+    // ATTRIBUTE_2:   Date of Surgery
+    // ATTRIBUTE_3:   Joint Injury Type
+    // ATTRIBUTE_4:   Specialist
+    try {
+      $users = Yii::app()->db->createCommand('SELECT token, firstname, lastname, email, attribute_1, attribute_2, attribute_3, attribute_4 FROM {{tokens_' . $surveyId . '}}')->queryAll();
+    } catch (Exception $e) {
+      // TODO: Display to user?
+    }
 
     // Create the payload
     $userScheduleModel = array();
@@ -154,6 +172,7 @@ class mailScheduler extends PluginBase
     $userScheduleModel['recruitmentDate'] = $_GET['formData']['recruitmentDate'];
     $userScheduleModel['surgeryDate'] = $_GET['formData']['surgeryDate'];
     $userScheduleModel['injuryType'] = $_GET['formData']['injuryType'];
+    $userScheduleModel['injurySide'] = $_GET['formData']['injurySide'];
     $userScheduleModel['recalcFollowupDates'] = $_GET['formData']['recalcFollowupDates'];
     $userScheduleModel['followupDates'] = $_GET['formData']['followupDates'];
 
@@ -183,13 +202,18 @@ class mailScheduler extends PluginBase
    * 
    * TODO: Move this into a README of some sort
    * 
+   * ATTRIBUTE_1:   Affected Side
+   * ATTRIBUTE_2:   Date of Surgery
+   * ATTRIBUTE_3:   Joint Injury Type
+   * 
    * Example of question group description (This is where the script pulls the data from)
    *   <div id="data" style="display:none;">
    *    <input id="firstName" value="{TOKEN:FIRSTNAME}" />
    *    <input id="lastName" value="{TOKEN:LASTNAME}" />
    *    <input id="email" value="{TOKEN:EMAIL}" />
-   *    <input id="injuryType" value="{TOKEN:ATTRIBUTE_10}" />
-   *    <input id="surgeryDate" value="{TOKEN:ATTRIBUTE_11}" />
+   *    <input id="injurySide" value="{TOKEN:ATTRIBUTE_1}" />
+   *    <input id="surgeryDate" value="{TOKEN:ATTRIBUTE_2}" />
+   *    <input id="injuryType" value="{TOKEN:ATTRIBUTE_3}" />
    *    <input id="token" value="{TOKEN:TOKEN}" />
    *    <input id="surveyId" value="{SID}" />
    *   </div>
@@ -201,6 +225,7 @@ class mailScheduler extends PluginBase
    *       lastName: document.getElementById('lastName').value,
    *       email: document.getElementById('email').value,
    *       injuryType: document.getElementById('injuryType').value,
+   *       injurySide: document.getElementById('injurySide').value,
    *       surgeryDate: document.getElementById('surgeryDate').value,
    *       token: document.getElementById('token').value,
    *       surveyId: document.getElementById('surveyId').value,

@@ -34,12 +34,22 @@
         <label class="default control-label col-sm-3" for="injuryType">Patient injury type</label>
         
         <select id="injuryType" name="injuryType">
-          <option value="">Category of Patient</option>
+          <option value="">Category of injury</option>
           <option value="H">Hip</option>
           <option value="KN">Knee Non-Arthritis</option>
           <option value="KA">Knee Arthroplasty</option>
           <option value="SA">Shoulder Arthroplasty</option>
           <option value="SI">Shoulder Instability</option>
+        </select>
+      </div>
+
+      <div class="form-group setting setting-select">
+        <label class="default control-label col-sm-3" for="injurySide">Patient injury side</label>
+        
+        <select id="injurySide" name="injurySide">
+          <option value="">Side of injury</option>
+          <option value="left">Left</option>
+          <option value="right">Right</option>
         </select>
       </div>
 
@@ -152,6 +162,7 @@
             surgeryDate: '',
             recalcFollowupDates: false,
             injuryType: '',
+            injurySide: '',
             followupDates: [
               '', // 6 Weeks
               '', // 3 Months
@@ -168,6 +179,7 @@
         document.getElementById('recruitmentDate').value = payload['recruitmentDate'];
         document.getElementById('surgeryDate').value = payload['surgeryDate'];
         document.getElementById('injuryType').value = payload['injuryType'];
+        document.getElementById('injurySide').value = payload['injurySide'];
         document.getElementById('recalcFollowupDates').checked = false;
 
         // Followup dates
@@ -194,6 +206,7 @@
           recruitmentDate: document.getElementById('recruitmentDate').value,
           surgeryDate: document.getElementById('surgeryDate').value,
           injuryType: document.getElementById('injuryType').value,
+          injurySide: document.getElementById('injurySide').value,
           recalcFollowupDates: document.getElementById('recalcFollowupDates').checked,
           followupDates: [
             document.getElementById('followUp0').value, // 6 Weeks
