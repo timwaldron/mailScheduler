@@ -121,7 +121,7 @@ class mailScheduler extends PluginBase
 
     return $content;
   }
-
+  
   /**
    * Function to get the user schedule data
    */
@@ -275,6 +275,8 @@ class mailScheduler extends PluginBase
 
     // Create URLs to call the functions that ping the backend
     $aData['getTelemetryURI'] = Yii::app()->createUrl('admin/pluginhelper', array('plugin' => $this->getName(), 'sa'=>'sidebody', 'method'=>'getTelemetry'));
+    $aData['cleanupGhostUsersURI'] = Yii::app()->createUrl('admin/pluginhelper', array('plugin' => $this->getName(), 'sa'=>'sidebody', 'method'=>'cleanupGhostUsers'));
+
     $aData['getMSSettingsURI'] = Yii::app()->createUrl('admin/pluginhelper', array('plugin' => $this->getName(), 'sa'=>'sidebody', 'method'=>'getMSSettings'));
     $aData['saveMSSettingsURI'] = Yii::app()->createUrl('admin/pluginhelper', array('plugin' => $this->getName(), 'sa'=>'sidebody', 'method'=>'saveMSSettings'));
 
@@ -287,6 +289,20 @@ class mailScheduler extends PluginBase
   {
     $response = $this->httpGet('telemetry', array());
     echo $response;
+  }
+
+  /**
+   * Function to remove ghost users from the mail scheduler database
+   */
+  public function cleanupGhostUsers()
+  {
+    try {
+      $payload = array();
+      $payload["userTokens"] = Yii::app()->db->createCommand('SELECT token FROM {{tokens_' . $_GET['surveyId'] . '}}')->queryAll();
+      $response = $this->httpPost('scheduler/cleanupusers', $payload["userTokens"]);
+    } catch (Exception $e) {
+      // TODO: Display to user?
+    }
   }
 
   public function getMSSettings()

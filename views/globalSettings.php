@@ -16,7 +16,14 @@
       <div class="form-group setting setting-select">
         <label class="default control-label col-sm-3" for="cronExpression">CRON expression for scheduled emails</label>
         
-        <input type="text" id="cronExpression" name="cronExpression" />
+        <input type="text" id="cronExpression" name="cronExpression" disabled />
+      </div>
+      
+      <!-- An issue where deleting a user from LimeSurvey doesn't delete the user from the mail scheduler -->
+      <div class="form-group setting setting-select">
+        <label class="default control-label col-sm-3" for="cleanupUsers">Clean-up users</label>
+        
+        <button type="button" id="cleanupUsers" name="cleanupUsers" onclick="handleCleanupUsers();">Delete Ghost Users</button>
       </div>
 
       <h3>Telemetry Data</h3>
@@ -41,7 +48,7 @@
   function getTelemetryData() {
     $.ajax({
       url: '<?php echo $getTelemetryURI ?>',
-      type: 'GET', 
+      type: 'GET',
       data: { },
       success: function(response) {
         const result = JSON.parse(response.split('<!DOCTYPE html>')[0]);
@@ -53,6 +60,16 @@
       },
       error: function(xhr) {
         // TODO: Display notification that save was unsuccessful!
+      }
+    });
+  }
+
+  function handleCleanupUsers() {
+    $.ajax({
+      url: '<?php echo $cleanupGhostUsersURI ?>',
+      type: 'GET',
+      data: {
+        surveyId: '<?php echo $surveyId ?>',
       }
     });
   }
